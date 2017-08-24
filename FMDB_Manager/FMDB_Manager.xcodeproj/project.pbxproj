@@ -13,6 +13,7 @@
 		04B146171F4EB63400EB65B2 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 04B146151F4EB63400EB65B2 /* Main.storyboard */; };
 		04B146191F4EB63400EB65B2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 04B146181F4EB63400EB65B2 /* Assets.xcassets */; };
 		04B1461C1F4EB63400EB65B2 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 04B1461A1F4EB63400EB65B2 /* LaunchScreen.storyboard */; };
+		04B146261F4EB71200EB65B2 /* FMDB_Manager.m in Sources */ = {isa = PBXBuildFile; fileRef = 04B146251F4EB71200EB65B2 /* FMDB_Manager.m */; };
 		60FA4B965FC3FB112007F71A /* libPods-FMDB_Manager.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1CF3F02AB25C8DDC212D40B1 /* libPods-FMDB_Manager.a */; };
 /* End PBXBuildFile section */
 
@@ -28,6 +29,8 @@
 		04B146181F4EB63400EB65B2 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		04B1461B1F4EB63400EB65B2 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		04B1461D1F4EB63400EB65B2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		04B146241F4EB71200EB65B2 /* FMDB_Manager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMDB_Manager.h; sourceTree = "<group>"; };
+		04B146251F4EB71200EB65B2 /* FMDB_Manager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMDB_Manager.m; sourceTree = "<group>"; };
 		1CF3F02AB25C8DDC212D40B1 /* libPods-FMDB_Manager.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-FMDB_Manager.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F121ED46419F0D46B04400EA /* Pods-FMDB_Manager.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FMDB_Manager.debug.xcconfig"; path = "Pods/Target Support Files/Pods-FMDB_Manager/Pods-FMDB_Manager.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -65,6 +68,7 @@
 		04B1460B1F4EB63400EB65B2 /* FMDB_Manager */ = {
 			isa = PBXGroup;
 			children = (
+				04B146231F4EB70100EB65B2 /* FMDBManager */,
 				04B1460F1F4EB63400EB65B2 /* AppDelegate.h */,
 				04B146101F4EB63400EB65B2 /* AppDelegate.m */,
 				04B146121F4EB63400EB65B2 /* ViewController.h */,
@@ -84,6 +88,15 @@
 				04B1460D1F4EB63400EB65B2 /* main.m */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		04B146231F4EB70100EB65B2 /* FMDBManager */ = {
+			isa = PBXGroup;
+			children = (
+				04B146241F4EB71200EB65B2 /* FMDB_Manager.h */,
+				04B146251F4EB71200EB65B2 /* FMDB_Manager.m */,
+			);
+			path = FMDBManager;
 			sourceTree = "<group>";
 		};
 		3AC5EF94291F4D84F431F421 /* Frameworks */ = {
@@ -226,6 +239,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				04B146261F4EB71200EB65B2 /* FMDB_Manager.m in Sources */,
 				04B146141F4EB63400EB65B2 /* ViewController.m in Sources */,
 				04B146111F4EB63400EB65B2 /* AppDelegate.m in Sources */,
 				04B1460E1F4EB63400EB65B2 /* main.m in Sources */,
@@ -389,6 +403,7 @@
 				04B146221F4EB63400EB65B2 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
