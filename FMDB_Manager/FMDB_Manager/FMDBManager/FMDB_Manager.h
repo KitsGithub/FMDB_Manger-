@@ -19,9 +19,18 @@
 
 @end
 
+
+@protocol FMDB_Manager_DataSource <NSObject>
+@optional
+- (NSString *)tableName;
+
+@end
+
+
 @interface FMDB_Manager : NSObject
 
 @property (nonatomic, weak) id <FMDB_Manager_Delegate> delegate;
+@property (nonatomic, weak) id <FMDB_Manager_DataSource> dataSource;
 
 /**
  单例初始化

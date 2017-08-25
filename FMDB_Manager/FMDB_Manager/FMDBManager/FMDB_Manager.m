@@ -10,6 +10,10 @@
 #import <FMDB.h>
 #import <objc/runtime.h>
 
+#import "ManagerConst.h"
+
+
+
 //初始化一次之后就会记住数据库地址
 static NSString *dbPath = @"";
 
@@ -40,16 +44,21 @@ static NSString *dbPath = @"";
  需要在 didFinishLaunchingWithOptions 初始化并调用
  */
 - (void)openAllSqliteTable {
-    //获取所有的表名
-    NSString *smsPaht = [[NSBundle mainBundle] pathForResource:@"FMDB_Manager_Test" ofType:@"sqlite"];
-    FMDatabase *db = [FMDatabase databaseWithPath:smsPaht];
-    if ([db open]) {
-        FMResultSet *resultSet = [db executeQuery:@"SELECT * FROM sqlite_master where type='table';"];
-        [self.tableNameArray addObject:resultSet.columnNameToIndexMap[@"name"]];
+    
+    if (!dbPath.length) {
+        if ([self.delegate respondsToSelector:@selector(dbPath)]) {
+            dbPath = [self.delegate dbPath];
+            NSLog(@"%@",dbPath);
+        }
     }
     
-    
-    [self creatTableWithTableType:@"123"];
+    //获取所有的表名
+    FMDatabase *db = [FMDatabase databaseWithPath:dbPath];
+    if ([db open]) {
+        FMResultSet *resultSet = [db executeQuery:@"SELECT * FROM sqlite_master where type='table';"];
+        NSLog(@"已存在的表名 - %@",resultSet.columnNameToIndexMap[@"name"]);
+        [self.tableNameArray addObject:resultSet.columnNameToIndexMap[@"name"]];
+    }
 }
 
 /**
@@ -60,23 +69,35 @@ static NSString *dbPath = @"";
 }
 
 #pragma mark - 动态取出模型的所有属性
+//获取模型的类型与名称
 - (NSArray *)getPropertyNameArrayWith:(id)model {
     // 动态获取模型的属性名
     NSMutableArray *pArray = [NSMutableArray array];
     unsigned int count = 0;
     
-    objc_property_t *properties = class_copyPropertyList([model class], &count);
+    Ivar *ivarList = class_copyIvarList([model class], &count);
     
     for (int index = 0; index < count; ++index) {
-        // 根据索引获得对应的属性(属性是一个结构体,包含很多其他的信息)
-        objc_property_t property = properties[index];
-        // 获得属性名字
-        const char *cname = property_getName(property);
-        // 将c语言字符串转换为oc字符串
-        NSString *ocname = [[NSString alloc] initWithCString:cname encoding:NSUTF8StringEncoding];
+        NSMutableDictionary *dic = [NSMutableDictionary dictionary];
         
-        [pArray addObject:ocname];
+        // 获得属性名字
+        const char *cName = ivar_getName(ivarList[index]);
+        const char *cType = ivar_getTypeEncoding(ivarList[index]);
+        
+        // 将c语言字符串转换为oc字符串
+        NSString *ocName = [[[NSString alloc] initWithCString:cName encoding:NSUTF8StringEncoding] substringFromIndex:1];
+        NSString *ocType = [ManagerConst ChangeSystemTypeToNewType:cType];
+        
+        
+        dic[@"pType"] = ocType;
+        dic[@"pName"] = ocName;
+        
+        if (ocName.length) {
+            [pArray addObject:dic];
+        }
     }
+    
+    free(ivarList);
     return pArray;
 }
 
@@ -150,6 +171,28 @@ static NSString *dbPath = @"";
     return NSSelectorFromString(selName);
 }
 
+#pragma mark - other
+- (NSString *)getCreatTableOperationStrWithPropertyArray:(NSArray *)pArray {
+    NSString *operationStr = @"(";
+    
+    for (NSInteger index = 0; index < pArray.count; index++) {
+        NSDictionary *dic = pArray[index];
+        
+        NSString *pType = dic[@"pType"];
+        NSString *pName = dic[@"pName"];
+        
+        operationStr = [operationStr stringByAppendingString:[NSString stringWithFormat:@"%@ %@",pName,pType]];
+        
+        if (index != pArray.count - 1) {
+            operationStr = [operationStr stringByAppendingString:@","];
+        }
+        
+    }
+    
+    operationStr = [operationStr stringByAppendingString:@")"];
+    return operationStr;
+}
+
 
 
 #pragma mark -   数据库的 - 基本操作
@@ -161,17 +204,32 @@ static NSString *dbPath = @"";
         }
     }
     
+    if (![model isKindOfClass:[NSObject class]]) {
+        NSAssert(false, @"传入的内容应该是NSObject");
+        return;
+    }
+    
     FMDatabaseQueue *db_Queue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
     [db_Queue inDatabase:^(FMDatabase *db) {
         
         if ([db open]) {
             NSLog(@"打开成功数据库成功");
-            NSString *tableField = [NSString string];
-            NSString *tableName = NSStringFromClass([model class]);
+            //获取创建数据库字段
+            NSString *tableField = [self getCreatTableOperationStrWithPropertyArray:[self getPropertyNameArrayWith:model]];
+            
+            NSString *tableName;
+            //获取表名
+            if ([self.dataSource respondsToSelector:@selector(tableName)]) {
+                tableName = [self.dataSource tableName];
+            } else {
+                tableName = NSStringFromClass([model class]);
+            }
+            
+            
             
             
             NSString *operationString = [@"CREATE TABLE IF NOT EXISTS " stringByAppendingString:tableName];
-            operationString = [operationString stringByAppendingString:tableField];
+            operationString = [operationString stringByAppendingString:[NSString stringWithFormat:@" %@",tableField]];
             
             BOOL success = [db executeUpdate:operationString];
             
