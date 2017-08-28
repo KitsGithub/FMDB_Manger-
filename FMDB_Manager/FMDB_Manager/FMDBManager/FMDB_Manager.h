@@ -51,11 +51,14 @@
 
 /* 数据库 - 基本操作 */
 // 建表
-- (void)creatTableWithTableType:(id)model;
+- (void)creatTableIfNotExistWithTableType:(id)model;
 
-// 删表
-- (NSString *)deletedTableData:(id)type withOption:(NSString *)option;
+// 删除表中内容
+- (void)deletedTableData:(id)model withOption:(NSString *)option;
 
+
+// 插表
+- (void)InsertDataInTable:(id)model modelArray:(NSMutableArray *)array;
 
 // 改表
 - (NSString *)alterTable:(id)type withOpton1:(NSString *)option1 andOption2:(NSString *)option2;

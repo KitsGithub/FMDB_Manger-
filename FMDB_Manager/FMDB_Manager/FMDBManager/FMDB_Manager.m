@@ -9,8 +9,16 @@
 #import "FMDB_Manager.h"
 #import <FMDB.h>
 #import <objc/runtime.h>
+#import <Foundation/NSEnumerator.h>
+#import <Foundation/NSRange.h>
+#import <Foundation/NSObjCRuntime.h>
 
 #import "ManagerConst.h"
+
+typedef enum : NSUInteger {
+    Creat_DBOperationType,
+    Inser_DBOperationType,
+} DBOperationType;
 
 
 
@@ -51,26 +59,35 @@ static NSString *dbPath = @"";
             NSLog(@"%@",dbPath);
         }
     }
-    
-    //获取所有的表名
-    FMDatabase *db = [FMDatabase databaseWithPath:dbPath];
-    if ([db open]) {
-        FMResultSet *resultSet = [db executeQuery:@"SELECT * FROM sqlite_master where type='table';"];
-        NSLog(@"已存在的表名 - %@",resultSet.columnNameToIndexMap[@"name"]);
-        [self.tableNameArray addObject:resultSet.columnNameToIndexMap[@"name"]];
-    }
 }
 
 /**
  关闭所有数据库通道
  */
 - (void)closeAllSquilteTable {
+    //获取所有的表名
+    FMDatabase *db = [FMDatabase databaseWithPath:dbPath];
+    if ([db open]) {
+        FMResultSet *resultSet = [db executeQuery:@"SELECT * FROM sqlite_master where type='table';"];
+        NSLog(@"已存在的表名 - %@",resultSet.columnNameToIndexMap[@"name"]);
+    }
+    
+    
     
 }
 
-#pragma mark - 动态取出模型的所有属性
-//获取模型的类型与名称
-- (NSArray *)getPropertyNameArrayWith:(id)model {
+#pragma mark - 私有方法
+/**
+ 获取模型的类型与名称
+
+ @param model 模型的class
+ @return 返回一个字典模型。其字典格式为
+ @{
+    NSString *pType = dic[@"pType"]; //属性类型
+    NSString *pName = dic[@"pName"]; //属性名称
+ }
+ */
+- (NSArray<NSMutableDictionary *> *)getPropertyNameArrayWith:(id)model {
     // 动态获取模型的属性名
     NSMutableArray *pArray = [NSMutableArray array];
     unsigned int count = 0;
@@ -159,6 +176,17 @@ static NSString *dbPath = @"";
     return model;
 }
 
+
+- (void)getCreatOptionStr:(id)model withArray:(NSArray *)array{
+    
+    
+}
+
+- (void)textFuction {
+    
+}
+
+
 #pragma mark - 通过字符串来创建该字符串的Setter方法，并返回
 // 获取属性的Get方法
 - (SEL)creatGetterWithPropertyName: (NSString *) propertyName{
@@ -171,8 +199,29 @@ static NSString *dbPath = @"";
     return NSSelectorFromString(selName);
 }
 
+// 拼接参数
+- (NSString *)getValuesString:(NSString *)fieldStr {
+    
+    NSArray *array = [fieldStr componentsSeparatedByString:@","];
+    NSString *valueString = @"(";
+    for (NSInteger index = 0; index < array.count; index++) {
+        
+        if (index == 0) {
+            valueString = [valueString stringByAppendingString:@"?"];
+        } else {
+            valueString = [valueString stringByAppendingString:@", ?"];
+        }
+    }
+    
+    valueString = [valueString stringByAppendingString:@");"];
+    
+    return valueString;
+}
+
+
+
 #pragma mark - other
-- (NSString *)getCreatTableOperationStrWithPropertyArray:(NSArray *)pArray {
+- (NSString *)getCreatTableOperationStrWithPropertyArray:(NSArray *)pArray type:(DBOperationType)type {
     NSString *operationStr = @"(";
     
     for (NSInteger index = 0; index < pArray.count; index++) {
@@ -181,15 +230,22 @@ static NSString *dbPath = @"";
         NSString *pType = dic[@"pType"];
         NSString *pName = dic[@"pName"];
         
-        operationStr = [operationStr stringByAppendingString:[NSString stringWithFormat:@"%@ %@",pName,pType]];
+        if (type == Creat_DBOperationType) {            //建表字段
+            operationStr = [operationStr stringByAppendingString:[NSString stringWithFormat:@"%@ %@",pName,pType]];
+        } else if (type == Inser_DBOperationType) {     //插入数据字段
+            operationStr = [operationStr stringByAppendingString:[NSString stringWithFormat:@"%@",pName]];
+        }
+        
         
         if (index != pArray.count - 1) {
             operationStr = [operationStr stringByAppendingString:@","];
         }
-        
     }
-    
     operationStr = [operationStr stringByAppendingString:@")"];
+    
+    if (type == Inser_DBOperationType) {
+        operationStr = [operationStr stringByAppendingString:[NSString stringWithFormat:@" VALUES %@",[self getValuesString:operationStr]]];
+    }
     return operationStr;
 }
 
@@ -197,7 +253,7 @@ static NSString *dbPath = @"";
 
 #pragma mark -   数据库的 - 基本操作
 // 建表
-- (void)creatTableWithTableType:(id)model {
+- (void)creatTableIfNotExistWithTableType:(id)model {
     if (!dbPath.length) {
         if ([self.delegate respondsToSelector:@selector(dbPath)]) {
             dbPath = [self.delegate dbPath];
@@ -215,7 +271,7 @@ static NSString *dbPath = @"";
         if ([db open]) {
             NSLog(@"打开成功数据库成功");
             //获取创建数据库字段
-            NSString *tableField = [self getCreatTableOperationStrWithPropertyArray:[self getPropertyNameArrayWith:model]];
+            NSString *tableField = [self getCreatTableOperationStrWithPropertyArray:[self getPropertyNameArrayWith:model] type:Creat_DBOperationType];
             
             NSString *tableName;
             //获取表名
@@ -224,9 +280,6 @@ static NSString *dbPath = @"";
             } else {
                 tableName = NSStringFromClass([model class]);
             }
-            
-            
-            
             
             NSString *operationString = [@"CREATE TABLE IF NOT EXISTS " stringByAppendingString:tableName];
             operationString = [operationString stringByAppendingString:[NSString stringWithFormat:@" %@",tableField]];
@@ -239,16 +292,55 @@ static NSString *dbPath = @"";
                 NSLog(@"%@创建失败",tableName);
             }
             
-            
         } else {
             NSLog(@"打开失败");
         }
     }];
 }
 
+// 插表
+- (void)InsertDataInTable:(id)model modelArray:(NSMutableArray *)array {
+    
+    if (!array.count) {
+        NSAssert(false, @"传入的数组为空");
+    }
+    
+    //防止该表没有被创建or没有被打开
+    [self creatTableIfNotExistWithTableType:[model class]];
+    
+    
+    
+    NSString *operationString = [[@"INSERT INTO " stringByAppendingString:NSStringFromClass([model class])] stringByAppendingString:[NSString stringWithFormat:@" %@",[self getCreatTableOperationStrWithPropertyArray:[self getPropertyNameArrayWith:model] type:Inser_DBOperationType]]];
+    
+    
+    
+    FMDatabaseQueue *db_Queue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
+    [db_Queue inDatabase:^(FMDatabase *db) {
+        if ([db open]) {
+            for (id model in array) {
+                
+                BOOL success = [db executeUpdate:operationString,@(1),@"小华",@"10",@"男"];
+                if (success) {
+                    NSLog(@"插入成功");
+                } else {
+                    NSLog(@"插入失败");
+                }
+                
+            }
+            
+            
+        }
+    }];
+    
+}
+
 // 删表
-- (NSString *)deletedTableData:(id)type withOption:(NSString *)option {
-    return nil;
+- (void)deletedTableData:(id)type withOption:(NSString *)option {
+    if (!dbPath.length) {
+        if ([self.delegate respondsToSelector:@selector(dbPath)]) {
+            dbPath = [self.delegate dbPath];
+        }
+    }
 }
 
 
@@ -263,14 +355,6 @@ static NSString *dbPath = @"";
 }
 
 
-- (NSString *)getOptionStringWithModel:(id)model {
-    NSMutableArray *propertyArray = [NSMutableArray array];
-    [self getProperyWith:model andArray:propertyArray];
-    
-    
-    
-    return nil;
-}
 
 
 

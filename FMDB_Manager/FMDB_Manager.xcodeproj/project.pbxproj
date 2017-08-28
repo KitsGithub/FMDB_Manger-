@@ -62,6 +62,15 @@
 			path = Tools;
 			sourceTree = "<group>";
 		};
+		04698D811F53F64C00D218ED /* DBModel */ = {
+			isa = PBXGroup;
+			children = (
+				045FE4BF1F4FF88C00CF04BC /* DBModel.h */,
+				045FE4C01F4FF88C00CF04BC /* DBModel.m */,
+			);
+			name = DBModel;
+			sourceTree = "<group>";
+		};
 		04B146001F4EB63400EB65B2 = {
 			isa = PBXGroup;
 			children = (
@@ -88,8 +97,7 @@
 				04B146101F4EB63400EB65B2 /* AppDelegate.m */,
 				04B146121F4EB63400EB65B2 /* ViewController.h */,
 				04B146131F4EB63400EB65B2 /* ViewController.m */,
-				045FE4BF1F4FF88C00CF04BC /* DBModel.h */,
-				045FE4C01F4FF88C00CF04BC /* DBModel.m */,
+				04698D811F53F64C00D218ED /* DBModel */,
 				04B146151F4EB63400EB65B2 /* Main.storyboard */,
 				04B146181F4EB63400EB65B2 /* Assets.xcassets */,
 				04B1461A1F4EB63400EB65B2 /* LaunchScreen.storyboard */,
