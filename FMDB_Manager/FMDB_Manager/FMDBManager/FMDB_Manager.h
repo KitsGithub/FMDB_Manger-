@@ -77,16 +77,22 @@ typedef void(^CallBack)(BOOL success);
 - (void)InsertDataInTable:(id)modelClass withValuesArray:(NSArray <NSObject *> *)valuesArray callBack:(CallBack)callBack;
 
 
+/**
+ 删除表数据
+
+ @param modelClass  数据模型Class
+ @param options     删除条件
+ @param callBack    结果回调
+ */
+- (void)DeletedDataFromTable:(id)modelClass withOptions:(NSString *)options callBack:(CallBack)callBack;
+
+
 // 改表
 - (NSString *)alterTable:(id)type withOpton1:(NSString *)option1 andOption2:(NSString *)option2;
 
 
 // 查表
 - (NSString *)SearchTable:(id)type withOption:(NSString *)option;
-
-
-// 删除表中内容
-- (void)deletedTableData:(id)model withOption:(NSString *)option;
 
 
 

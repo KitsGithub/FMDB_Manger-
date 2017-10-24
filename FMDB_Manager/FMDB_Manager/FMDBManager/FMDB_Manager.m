@@ -181,25 +181,16 @@ static NSString *dbPath = @"";
 }
 
 
-- (void)getCreatOptionStr:(id)model withArray:(NSArray *)array{
-    
-//    if (!object_isClass(model)) {
-//        Ivar ivar = class_getInstanceVariable([model class], cName);
-//        NSLog(@"成员变量的值 --  %@",object_getIvar(model, ivar));
-//        id value = object_getIvar(model, ivar);
-//        if ([ocType isEqualToString:@"INTEGER"]) {
-//            dic[@"pValue"] = @([value intValue]);
-//        } else {
-//            dic[@"pValue"] = value;
-//        }
-//    }
-    
-}
 
+/**
+ 获取表名
 
+ @param modelClass  模型的Class
+ @return            如果DataSource没有指定表名，则Class就是表名
+ */
 - (NSString *)getTableNameWithModelClass:(id)modelClass {
     NSString *tableName;
-    //获取表名
+    
     if ([self.dataSource respondsToSelector:@selector(tableNameWithModelClass:)]) {
         tableName = [self.dataSource tableNameWithModelClass:modelClass];
     } else {
@@ -351,13 +342,30 @@ static NSString *dbPath = @"";
 
 
 
-// 删表
-- (void)deletedTableData:(id)type withOption:(NSString *)option {
-    if (!dbPath.length) {
-        if ([self.delegate respondsToSelector:@selector(dbPath)]) {
-            dbPath = [self.delegate dbPath];
+/**
+ 删除表数据
+ 
+ @param modelClass  数据模型Class
+ @param options     删除条件
+ @param callBack    结果回调
+ */
+- (void)DeletedDataFromTable:(id)modelClass withOptions:(NSString *)options callBack:(CallBack)callBack {
+    //获取表名
+    NSString *tableName = [self getTableNameWithModelClass:modelClass];
+    
+    NSString *optionStr = [NSString stringWithFormat:@"DELETE FROM %@ WHERE %@;",tableName,options];
+    
+    FMDatabaseQueue *db_Queue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
+    [db_Queue inTransaction:^(FMDatabase *db, BOOL *rollback) {
+        if ([db open]) { //防止该表没有被创建or没有被打开
+            BOOL success = [db executeUpdate:optionStr];
+            if (callBack) {
+                callBack(success);
+            }
         }
-    }
+    }];
+    
+    
 }
 
 

@@ -86,6 +86,8 @@
 }
 
 - (void)deletedData {
+    [[FMDB_Manager shareManager] DeletedDataFromTable:[DBModel class] withOptions:@"age >= 50"];
+    
     
 }
 
