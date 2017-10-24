@@ -10,6 +10,8 @@
 
 @interface DBModel : NSObject
 
+@property (nonatomic, assign,getter=isSchool) BOOL school;
+
 @property (nonatomic, copy) NSString *name;
 
 @property (nonatomic, assign) NSInteger age;
@@ -18,7 +20,7 @@
 
 
 
-@property (nonatomic, assign,getter=isSchool) BOOL school;
+
 
 
 

@@ -8,6 +8,11 @@
 
 #import <Foundation/Foundation.h>
 
+typedef void(^CallBack)(BOOL success);
+
+/**
+ 代理协议
+ */
 @protocol FMDB_Manager_Delegate <NSObject>
 
 @required
@@ -20,9 +25,12 @@
 @end
 
 
+/**
+ 数据源协议
+ */
 @protocol FMDB_Manager_DataSource <NSObject>
 @optional
-- (NSString *)tableName;
+- (NSString *)tableNameWithModelClass:(id)Class;
 
 @end
 
@@ -50,22 +58,35 @@
 
 
 /* 数据库 - 基本操作 */
-// 建表
-- (void)creatTableIfNotExistWithTableType:(id)model;
+/**
+ 创建数据库
 
-// 删除表中内容
-- (void)deletedTableData:(id)model withOption:(NSString *)option;
+ @param modelClass  数据模型Class
+ @param callBack    结果回调
+ */
+- (void)creatTableIfNotExistWithModelClass:(id)modelClass callBack:(CallBack)callBack;
 
 
-// 插表
-- (void)InsertDataInTable:(id)model modelArray:(NSMutableArray *)array;
+/**
+ 插入数据到数据库
+
+ @param modelClass  数据模型Class
+ @param valuesArray 模型对应的值数组
+ @param callBack    结果回调
+ */
+- (void)InsertDataInTable:(id)modelClass withValuesArray:(NSArray <NSObject *> *)valuesArray callBack:(CallBack)callBack;
+
 
 // 改表
 - (NSString *)alterTable:(id)type withOpton1:(NSString *)option1 andOption2:(NSString *)option2;
 
+
 // 查表
 - (NSString *)SearchTable:(id)type withOption:(NSString *)option;
 
+
+// 删除表中内容
+- (void)deletedTableData:(id)model withOption:(NSString *)option;
 
 
 

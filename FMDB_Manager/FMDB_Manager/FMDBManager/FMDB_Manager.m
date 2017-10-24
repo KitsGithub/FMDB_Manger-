@@ -16,8 +16,8 @@
 #import "ManagerConst.h"
 
 typedef enum : NSUInteger {
-    Creat_DBOperationType,
-    Inser_DBOperationType,
+    Creat_DBOperationType,  //创建
+    Inser_DBOperationType,  //插入
 } DBOperationType;
 
 
@@ -101,9 +101,13 @@ static NSString *dbPath = @"";
         const char *cName = ivar_getName(ivarList[index]);
         const char *cType = ivar_getTypeEncoding(ivarList[index]);
         
+        
+        
         // 将c语言字符串转换为oc字符串
         NSString *ocName = [[[NSString alloc] initWithCString:cName encoding:NSUTF8StringEncoding] substringFromIndex:1];
         NSString *ocType = [ManagerConst ChangeSystemTypeToNewType:cType];
+        
+        
         
         
         dic[@"pType"] = ocType;
@@ -179,11 +183,29 @@ static NSString *dbPath = @"";
 
 - (void)getCreatOptionStr:(id)model withArray:(NSArray *)array{
     
+//    if (!object_isClass(model)) {
+//        Ivar ivar = class_getInstanceVariable([model class], cName);
+//        NSLog(@"成员变量的值 --  %@",object_getIvar(model, ivar));
+//        id value = object_getIvar(model, ivar);
+//        if ([ocType isEqualToString:@"INTEGER"]) {
+//            dic[@"pValue"] = @([value intValue]);
+//        } else {
+//            dic[@"pValue"] = value;
+//        }
+//    }
     
 }
 
-- (void)textFuction {
-    
+
+- (NSString *)getTableNameWithModelClass:(id)modelClass {
+    NSString *tableName;
+    //获取表名
+    if ([self.dataSource respondsToSelector:@selector(tableNameWithModelClass:)]) {
+        tableName = [self.dataSource tableNameWithModelClass:modelClass];
+    } else {
+        tableName = NSStringFromClass(modelClass);
+    }
+    return tableName;
 }
 
 
@@ -236,7 +258,6 @@ static NSString *dbPath = @"";
             operationStr = [operationStr stringByAppendingString:[NSString stringWithFormat:@"%@",pName]];
         }
         
-        
         if (index != pArray.count - 1) {
             operationStr = [operationStr stringByAppendingString:@","];
         }
@@ -251,16 +272,22 @@ static NSString *dbPath = @"";
 
 
 
+
 #pragma mark -   数据库的 - 基本操作
-// 建表
-- (void)creatTableIfNotExistWithTableType:(id)model {
+/**
+ 创建数据库
+ 
+ @param modelClass  数据模型Class
+ @param callBack    结果回调
+ */
+- (void)creatTableIfNotExistWithModelClass:(id)modelClass callBack:(CallBack)callBack {
     if (!dbPath.length) {
         if ([self.delegate respondsToSelector:@selector(dbPath)]) {
             dbPath = [self.delegate dbPath];
         }
     }
     
-    if (![model isKindOfClass:[NSObject class]]) {
+    if (![modelClass isKindOfClass:[NSObject class]]) {
         NSAssert(false, @"传入的内容应该是NSObject");
         return;
     }
@@ -271,25 +298,19 @@ static NSString *dbPath = @"";
         if ([db open]) {
             NSLog(@"打开成功数据库成功");
             //获取创建数据库字段
-            NSString *tableField = [self getCreatTableOperationStrWithPropertyArray:[self getPropertyNameArrayWith:model] type:Creat_DBOperationType];
+            NSString *tableField = [self getCreatTableOperationStrWithPropertyArray:[self getPropertyNameArrayWith:modelClass] type:Creat_DBOperationType];
             
-            NSString *tableName;
+            
             //获取表名
-            if ([self.dataSource respondsToSelector:@selector(tableName)]) {
-                tableName = [self.dataSource tableName];
-            } else {
-                tableName = NSStringFromClass([model class]);
-            }
+            NSString *tableName = [self getTableNameWithModelClass:modelClass];
             
             NSString *operationString = [@"CREATE TABLE IF NOT EXISTS " stringByAppendingString:tableName];
             operationString = [operationString stringByAppendingString:[NSString stringWithFormat:@" %@",tableField]];
             
             BOOL success = [db executeUpdate:operationString];
             
-            if (success) {
-                NSLog(@"%@创建成功",tableName);
-            } else {
-                NSLog(@"%@创建失败",tableName);
+            if (callBack) {
+                callBack(success);
             }
             
         } else {
@@ -298,41 +319,37 @@ static NSString *dbPath = @"";
     }];
 }
 
-// 插表
-- (void)InsertDataInTable:(id)model modelArray:(NSMutableArray *)array {
+/**
+ 插入数据到数据库
+ 
+ @param modelClass 数据模型Class
+ @param valuesArray 模型对应的值数组
+ */
+- (void)InsertDataInTable:(id)modelClass withValuesArray:(NSArray <NSObject *> *)valuesArray callBack:(CallBack)callBack {
     
-    if (!array.count) {
+    if (!valuesArray.count) {
         NSAssert(false, @"传入的数组为空");
     }
     
-    //防止该表没有被创建or没有被打开
-    [self creatTableIfNotExistWithTableType:[model class]];
+    //获取表名
+    NSString *tableName = [self getTableNameWithModelClass:modelClass];
     
-    
-    
-    NSString *operationString = [[@"INSERT INTO " stringByAppendingString:NSStringFromClass([model class])] stringByAppendingString:[NSString stringWithFormat:@" %@",[self getCreatTableOperationStrWithPropertyArray:[self getPropertyNameArrayWith:model] type:Inser_DBOperationType]]];
-    
-    
+    //插入操作字符串
+    NSString *operationString = [[@"INSERT INTO " stringByAppendingString:tableName] stringByAppendingString:[NSString stringWithFormat:@" %@",[self getCreatTableOperationStrWithPropertyArray:[self getPropertyNameArrayWith:modelClass] type:Inser_DBOperationType]]];
+    NSLog(@"插入操作符 %@",operationString);
     
     FMDatabaseQueue *db_Queue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
-    [db_Queue inDatabase:^(FMDatabase *db) {
-        if ([db open]) {
-            for (id model in array) {
-                
-                BOOL success = [db executeUpdate:operationString,@(1),@"小华",@"10",@"男"];
-                if (success) {
-                    NSLog(@"插入成功");
-                } else {
-                    NSLog(@"插入失败");
-                }
-                
+    [db_Queue inTransaction:^(FMDatabase *db, BOOL *rollback) {
+        if ([db open]) { //防止该表没有被创建or没有被打开
+            BOOL success = [db executeUpdate:operationString withArgumentsInArray:valuesArray];
+            if (callBack) {
+                callBack(success);
             }
-            
-            
         }
     }];
-    
 }
+
+
 
 // 删表
 - (void)deletedTableData:(id)type withOption:(NSString *)option {
