@@ -56,6 +56,12 @@
     [button4 addTarget:self action:@selector(deletedData) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:button4];
     
+    UIButton *button5 = [[UIButton alloc] initWithFrame:CGRectMake(20, 250, 100, 30)];
+    button5.backgroundColor = [UIColor grayColor];
+    [button5 setTitle:@"查数据" forState:UIControlStateNormal];
+    [button5 addTarget:self action:@selector(searchData) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:button5];
+    
 }
 
 #pragma mark - UIAction
@@ -75,7 +81,7 @@
 //插入数据
 - (void)creatDataToDB {
     for (DBModel *model in self.dataArray) {
-        [[FMDB_Manager shareManager] InsertDataInTable:[DBModel class] withValuesArray:@[@(model.isSchool),model.name,@(model.age),model.sex] callBack:^(BOOL success) {
+        [[FMDB_Manager shareManager] InsertDataInTable:[DBModel class] withValuesArray:@[model.name,model.age,model.sex,model.school] callBack:^(BOOL success) {
             if (success) {
                 NSLog(@"插入成功");
             } else {
@@ -86,9 +92,25 @@
 }
 
 - (void)deletedData {
-    [[FMDB_Manager shareManager] DeletedDataFromTable:[DBModel class] withOptions:@"age >= 50"];
-    
-    
+    [[FMDB_Manager shareManager] DeletedDataFromTable:[DBModel class] withOptions:@"age >= 50" callBack:^(BOOL success) {
+        if (success) {
+            NSLog(@"删除成功");
+        } else {
+            NSLog(@"删除失败");
+        }
+    }];
+}
+
+- (void)searchData {
+    [[FMDB_Manager shareManager] SearchTable:[DBModel class] withOptions:@"age = 10" callBack:^(NSArray<NSObject *> *array) {
+        
+        NSLog(@"查询出 %zd 个对象",array.count);
+        for (NSInteger index = 0; index<array.count; index++) {
+            DBModel *model = (DBModel *)array[index];
+            NSLog(@"%@",model.name);
+        }
+        
+    }];
 }
 
 #pragma mark - FMDB_ManagerDelegate
@@ -114,14 +136,20 @@
         for (NSInteger index = 0; index < 10; index++) {
             DBModel *model = [DBModel new];
             
-            model.name = @"哈哈";
-            model.age = index * 10;
+            
+            model.age = @(index * 10);
+            if ([model.age isEqualToNumber:[NSNumber numberWithInteger:10]]) {
+                model.name = @"特殊的名字";
+            } else {
+                model.name = @"哈哈";
+            }
+            
             if (index % 2) {
                 model.sex = @"男";
             } else {
                 model.sex = @"女";
             }
-            model.school = index % 2;
+            model.school = @(index % 2);
             
             [_dataArray addObject:model];
         }

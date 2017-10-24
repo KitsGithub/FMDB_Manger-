@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 
 typedef void(^CallBack)(BOOL success);
+typedef void(^FMResultsCallBack)(NSArray <NSObject *> *array);
 
 /**
  代理协议
@@ -86,13 +87,15 @@ typedef void(^CallBack)(BOOL success);
  */
 - (void)DeletedDataFromTable:(id)modelClass withOptions:(NSString *)options callBack:(CallBack)callBack;
 
+// 查表
+- (NSArray <NSObject *> *)SearchTable:(id)modelClass withOptions:(NSString *)options callBack:(FMResultsCallBack)callBack;
 
 // 改表
 - (NSString *)alterTable:(id)type withOpton1:(NSString *)option1 andOption2:(NSString *)option2;
 
 
-// 查表
-- (NSString *)SearchTable:(id)type withOption:(NSString *)option;
+
+// 删除表
 
 
 

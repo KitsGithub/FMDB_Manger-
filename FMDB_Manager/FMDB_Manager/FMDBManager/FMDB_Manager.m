@@ -87,12 +87,12 @@ static NSString *dbPath = @"";
     NSString *pName = dic[@"pName"]; //属性名称
  }
  */
-- (NSArray<NSMutableDictionary *> *)getPropertyNameArrayWith:(id)model {
+- (NSArray<NSMutableDictionary *> *)getPropertyNameArrayWith:(id)modelClass {
     // 动态获取模型的属性名
     NSMutableArray *pArray = [NSMutableArray array];
     unsigned int count = 0;
     
-    Ivar *ivarList = class_copyIvarList([model class], &count);
+    Ivar *ivarList = class_copyIvarList(modelClass, &count);
     
     for (int index = 0; index < count; ++index) {
         NSMutableDictionary *dic = [NSMutableDictionary dictionary];
@@ -101,14 +101,9 @@ static NSString *dbPath = @"";
         const char *cName = ivar_getName(ivarList[index]);
         const char *cType = ivar_getTypeEncoding(ivarList[index]);
         
-        
-        
         // 将c语言字符串转换为oc字符串
         NSString *ocName = [[[NSString alloc] initWithCString:cName encoding:NSUTF8StringEncoding] substringFromIndex:1];
         NSString *ocType = [ManagerConst ChangeSystemTypeToNewType:cType];
-        
-        
-        
         
         dic[@"pType"] = ocType;
         dic[@"pName"] = ocName;
@@ -163,20 +158,51 @@ static NSString *dbPath = @"";
     //实例化一个model
     id model = [[modelClass alloc] init];
     
-    NSArray *pArray = [self getPropertyNameArrayWith:model];
     
-    for (NSInteger index = 0; index < pArray.count; index++ ) {
-        //获取set方法
-        SEL setSel = [self creatSetterWithPropertyName:pArray[index]];
+    unsigned int count = 0;
+    //获取属性列表
+    Ivar *members = class_copyIvarList(modelClass, &count);
+    
+    //遍历属性列表
+    for (int i = 0 ; i < count; i++) {
+        Ivar var = members[i];
+        //获取变量名称
+        const char *memberName = ivar_getName(var);
+        NSString *ocName = [[[NSString alloc] initWithCString:memberName encoding:NSUTF8StringEncoding] substringFromIndex:1];
+        //获取变量类型
+        const char *memberType = ivar_getTypeEncoding(var);
         
-        if ([model respondsToSelector:setSel]) {
-            NSString *value = [result stringForColumn:pArray[index]];
-            value = [value stringByReplacingCharactersInRange:NSMakeRange(0, 1) withString:[[value substringToIndex:1] uppercaseString]];
-            [model performSelectorOnMainThread:setSel withObject:value waitUntilDone:[NSThread isMainThread]];
-            
+        Ivar ivar = class_getInstanceVariable(modelClass, memberName);
+        
+        NSString *typeStr = [NSString stringWithCString:memberType encoding:NSUTF8StringEncoding];
+        
+        //判断类型
+        if ([typeStr isEqualToString:@"@\"NSString\""]) {
+            object_setIvar(model, ivar, [result stringForColumn:ocName]);
+        }else {
+            NSNumber *value = [NSNumber numberWithInteger:[result intForColumn:ocName]];
+            object_setIvar(model, ivar, value);
         }
-        
     }
+    
+    /*
+     NSArray *pArray = [self getPropertyNameArrayWith:model];
+     
+     for (NSInteger index = 0; index < pArray.count; index++ ) {
+     //获取set方法
+     SEL setSel = [self creatSetterWithPropertyName:pArray[index]];
+     
+     if ([model respondsToSelector:setSel]) {
+     NSString *value = [result stringForColumn:pArray[index]];
+     value = [value stringByReplacingCharactersInRange:NSMakeRange(0, 1) withString:[[value substringToIndex:1] uppercaseString]];
+     [model performSelectorOnMainThread:setSel withObject:value waitUntilDone:[NSThread isMainThread]];
+     
+     }
+     
+     }
+     */
+    
+    
     return model;
 }
 
@@ -364,21 +390,53 @@ static NSString *dbPath = @"";
             }
         }
     }];
-    
-    
 }
 
+// 查表
+- (NSArray <NSObject *> *)SearchTable:(id)modelClass withOptions:(NSString *)options callBack:(FMResultsCallBack)callBack {
+    NSMutableArray *targetArray = [NSMutableArray array];
+    
+    //获取表名
+    NSString *tableName = [self getTableNameWithModelClass:modelClass];
+    
+    NSString *operation = @"SELECT ";
+    
+    NSArray *pArray = [self getPropertyNameArrayWith:modelClass];
+    NSString *pFields = [NSString string];
+
+    for (NSInteger index = 0; index < pArray.count; index++) {
+        NSMutableDictionary *dic = pArray[index];
+        if (index == 0) {
+            pFields = [pFields stringByAppendingString:[NSString stringWithFormat:@"%@",dic[@"pName"]]];
+        } else {
+            pFields = [pFields stringByAppendingString:[NSString stringWithFormat:@",%@",dic[@"pName"]]];
+        }
+    }
+    
+    operation = [operation stringByAppendingString:[NSString stringWithFormat:@"%@ FROM %@ WHERE %@;",pFields,tableName,options]];
+    
+    
+    FMDatabaseQueue *db_Queue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
+    [db_Queue inTransaction:^(FMDatabase *db, BOOL *rollback) {
+        if ([db open]) { //防止该表没有被创建or没有被打开
+            FMResultSet *result = [db executeQuery:operation];
+            while ([result next]) {
+                id modelObject = [self setPropertyWithResule:result WithClass:modelClass];
+                [targetArray addObject:modelObject];
+            }
+            if (callBack) {
+                callBack([targetArray copy]);
+            }
+        }
+    }];
+    
+    return [targetArray copy];
+}
 
 // 改表
 - (NSString *)alterTable:(id)type withOpton1:(NSString *)option1 andOption2:(NSString *)option2 {
     return nil;
 }
-
-// 查表
-- (NSString *)SearchTable:(id)type withOption:(NSString *)option {
-    return nil;
-}
-
 
 
 
