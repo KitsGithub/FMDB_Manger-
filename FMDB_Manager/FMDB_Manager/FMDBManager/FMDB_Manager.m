@@ -317,6 +317,32 @@ static NSString *dbPath = @"";
 }
 
 /**
+ 为表添加索引
+ 
+ @param modelClass      数据模型Class
+ @param indexes         索引字段
+ @param IndexesName     新增的索引名
+ @param callBack        结果回调
+ */
+- (void)creatIndexInTable:(id)modelClass withString:(NSString *)indexes andIndexName:(NSString *)IndexesName callBack:(CallBack)callBack {
+    
+    //获取表名
+    NSString *tableName = [self getTableNameWithModelClass:modelClass];
+    
+    NSString *operation = [NSString stringWithFormat:@"create index %@ on %@(%@)",IndexesName,tableName,indexes];
+    FMDatabaseQueue *db_Queue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
+    [db_Queue inTransaction:^(FMDatabase *db, BOOL *rollback) {
+        if ([db open]) { //防止该表没有被创建or没有被打开
+            BOOL success = [db executeUpdate:operation];
+            if (callBack) {
+                callBack(success);
+            }
+        }
+    }];
+}
+
+
+/**
  插入数据到数据库
  
  @param modelClass 数据模型Class
@@ -418,9 +444,34 @@ static NSString *dbPath = @"";
     
 }
 
-// 改表
-- (NSString *)alterTable:(id)type withOpton1:(NSString *)option1 andOption2:(NSString *)option2 {
-    return nil;
+
+/**
+ 修改表的数据
+ 
+ @param modelClass      数据模型Class
+ @param option1         修改内容
+ @param option2         修改条件
+ @param callBack        修改结果回调
+ */
+- (void)alterTableWithTableName:(id)modelClass withOpton1:(NSString *)option1 andOption2:(NSString *)option2 callBack:(CallBack)callBack{
+    
+    //获取表名
+    NSString *tableName = [self getTableNameWithModelClass:modelClass];
+    
+    NSString *operation = [NSString string];
+    operation = [operation stringByAppendingString:[NSString stringWithFormat:@"UPDATE %@ SET %@ WHERE %@",tableName,option1,option2]];
+    
+    FMDatabaseQueue *db_Queue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
+    [db_Queue inTransaction:^(FMDatabase *db, BOOL *rollback) {
+        if ([db open]) { //防止该表没有被创建or没有被打开
+            BOOL success = [db executeUpdate:operation];
+            if (callBack) {
+                callBack(success);
+            }
+        }
+    }];
+    
+    
 }
 
 

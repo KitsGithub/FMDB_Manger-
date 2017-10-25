@@ -63,11 +63,17 @@
     [self.view addSubview:button5];
     
     
-    UIButton *button6 = [[UIButton alloc] initWithFrame:CGRectMake(20, 300, 100, 30)];
+    UIButton *button6 = [[UIButton alloc] initWithFrame:CGRectMake(20, 300, 150, 30)];
     button6.backgroundColor = [UIColor grayColor];
     [button6 setTitle:@"删除数据库表" forState:UIControlStateNormal];
     [button6 addTarget:self action:@selector(deletedTable) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:button6];
+    
+    UIButton *button7 = [[UIButton alloc] initWithFrame:CGRectMake(20, 350, 100, 30)];
+    button7.backgroundColor = [UIColor grayColor];
+    [button7 setTitle:@"更新数据" forState:UIControlStateNormal];
+    [button7 addTarget:self action:@selector(updataData) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:button7];
 }
 
 #pragma mark - UIAction
@@ -106,6 +112,7 @@
     }
 }
 
+//删除数据
 - (void)deletedData {
     [[FMDB_Manager shareManager] DeletedDataFromTable:[DBModel class] withOptions:@"age >= 50" callBack:^(BOOL success) {
         if (success) {
@@ -116,6 +123,7 @@
     }];
 }
 
+//查询数据
 - (void)searchData {
     [[FMDB_Manager shareManager] SearchTable:[DBModel class] withOptions:@"age = 10" callBack:^(NSArray<NSObject *> *array) {
         
@@ -125,6 +133,15 @@
             NSLog(@"%@",model.name);
         }
         
+    }];
+}
+
+//更新表数据
+- (void)updataData {
+    [[FMDB_Manager shareManager] alterTableWithTableName:[DBModel class] withOpton1:@"name = '我是男人'" andOption2:@"sex = '男'" callBack:^(BOOL success) {
+        if (success) {
+            NSLog(@"修改成功");
+        }
     }];
 }
 
