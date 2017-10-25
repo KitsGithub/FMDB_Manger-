@@ -20,7 +20,7 @@ FMDB_Manger的初始化方法
 FMDB_Manager *manager = [FMDB_Manager shareManager];
 ```
 
-同时，为了多个不同的使用场景，因而需要外部传入数据库路径，可通过实现```objc delegate```来传入数据库路径
+同时，为了多个不同的使用场景，因而需要外部传入数据库路径，可通过实现```delegate```来传入数据库路径
 ```objc
 /**
 代理协议
@@ -36,7 +36,7 @@ FMDB_Manager *manager = [FMDB_Manager shareManager];
 
 @end
 ```
-而指定```objc DataSource``` 则可以动态传入某个场景需要的表名，如果不实现，则表名为所传入的Class，后面API会做详细解说
+而指定```DataSource``` 则可以动态传入某个场景需要的表名，如果不实现，则表名为所传入的Class，后面API会做详细解说
 ```objc
 /**
 数据源协议
@@ -48,7 +48,8 @@ FMDB_Manager *manager = [FMDB_Manager shareManager];
 @end
 ```
 
-数据库的增删改查方法
+## 数据库的增删改查方法
+### 增
 ```objc
 /**
 创建数据库
@@ -70,7 +71,7 @@ FMDB_Manager *manager = [FMDB_Manager shareManager];
 }
 ```
 
-
+### 删
 从表中删除数据
 ```objc
 /**
@@ -93,7 +94,7 @@ FMDB_Manager *manager = [FMDB_Manager shareManager];
 }
 ```
 
-
+### 改
 ```objc
 /**
 修改表的数据
@@ -116,7 +117,7 @@ FMDB_Manager *manager = [FMDB_Manager shareManager];
 }
 ```
 
-
+### 查
 ```objc
 /**
 查询表数据
@@ -155,6 +156,7 @@ FMDB_Manager *manager = [FMDB_Manager shareManager];
 - (void)creatIndexInTable:(id)modelClass withString:(NSString *)indexes andIndexName:(NSString *)IndexesName callBack:(CallBack)callBack;
 ```
 
+删除数据库表的方法
 ```objc
 /**
 删除数据库表
