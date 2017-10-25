@@ -52,10 +52,6 @@ typedef void(^FMResultsCallBack)(NSArray <NSObject *> *array);
  */
 - (void)openAllSqliteTable;
 
-/**
- 关闭所有数据库通道
- */
-- (void)closeAllSquilteTable;
 
 
 /* 数据库 - 基本操作 */
