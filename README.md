@@ -71,6 +71,35 @@ FMDB_Manager *manager = [FMDB_Manager shareManager];
 }
 ```
 
+向数据库中添加新的数据
+```objc
+/**
+插入数据到 表
+
+@param modelClass      数据模型Class
+@param valuesArray     模型对应的值数组
+@param callBack        结果回调
+*/
+- (void)InsertDataInTable:(id)modelClass withValuesArray:(NSArray <NSObject *> *)valuesArray callBack:(CallBack)callBack;
+```
+增加的数据的用法
+```objc
+- (void)creatDataToDB {
+    for (DBModel *model in self.dataArray) {
+        [[FMDB_Manager shareManager] InsertDataInTable:[DBModel class] withValuesArray:@[model.name,model.age,model.sex,model.school] callBack:^(BOOL success) {
+            if (success) {
+                NSLog(@"插入成功");
+            } else {
+                NSLog(@"插入失败");
+            }
+        }];
+    }
+}
+```
+
+
+
+
 ### 删
 从表中删除数据
 ```objc
