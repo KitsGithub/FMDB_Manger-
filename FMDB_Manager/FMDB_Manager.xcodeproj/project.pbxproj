@@ -39,6 +39,7 @@
 		04B146241F4EB71200EB65B2 /* FMDB_Manager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMDB_Manager.h; sourceTree = "<group>"; };
 		04B146251F4EB71200EB65B2 /* FMDB_Manager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMDB_Manager.m; sourceTree = "<group>"; };
 		1CF3F02AB25C8DDC212D40B1 /* libPods-FMDB_Manager.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-FMDB_Manager.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		47F269F11FA0360E003A3CB7 /* Messages.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Messages.framework; path = System/Library/Frameworks/Messages.framework; sourceTree = SDKROOT; };
 		47F9BB621F9F2400002E8155 /* testModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = testModel.h; sourceTree = "<group>"; };
 		47F9BB631F9F2400002E8155 /* testModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = testModel.m; sourceTree = "<group>"; };
 		F121ED46419F0D46B04400EA /* Pods-FMDB_Manager.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FMDB_Manager.debug.xcconfig"; path = "Pods/Target Support Files/Pods-FMDB_Manager/Pods-FMDB_Manager.debug.xcconfig"; sourceTree = "<group>"; };
@@ -133,6 +134,7 @@
 		3AC5EF94291F4D84F431F421 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				47F269F11FA0360E003A3CB7 /* Messages.framework */,
 				1CF3F02AB25C8DDC212D40B1 /* libPods-FMDB_Manager.a */,
 			);
 			name = Frameworks;

@@ -87,16 +87,26 @@ typedef void(^FMResultsCallBack)(NSArray <NSObject *> *array);
  */
 - (void)DeletedDataFromTable:(id)modelClass withOptions:(NSString *)options callBack:(CallBack)callBack;
 
-// 查表
-- (NSArray <NSObject *> *)SearchTable:(id)modelClass withOptions:(NSString *)options callBack:(FMResultsCallBack)callBack;
+/**
+ 查询数据库表
+
+ @param modelClass  数据模型Class
+ @param options     查询条件
+ @param callBack    查询结果回调
+ */
+- (void)SearchTable:(id)modelClass withOptions:(NSString *)options callBack:(FMResultsCallBack)callBack;
+
 
 // 改表
 - (NSString *)alterTable:(id)type withOpton1:(NSString *)option1 andOption2:(NSString *)option2;
 
 
+/**
+ 删除数据库表
 
-// 删除表
-
-
+ @param modelClass  数据模型Class __ 如没有设置DataSource，则取Class名为表名试着删除
+ @param callBack    删除结果
+ */
+- (void)deletedTableWithTableName:(id)modelClass callBack:(CallBack)callBack;;
 
 @end

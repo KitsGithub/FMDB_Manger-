@@ -12,6 +12,7 @@
 #import <Foundation/NSEnumerator.h>
 #import <Foundation/NSRange.h>
 #import <Foundation/NSObjCRuntime.h>
+#import <Messages/Messages.h>
 
 #import "ManagerConst.h"
 
@@ -80,7 +81,7 @@ static NSString *dbPath = @"";
 /**
  获取模型的类型与名称
 
- @param model 模型的class
+ @param modelClass 模型的class
  @return 返回一个字典模型。其字典格式为
  @{
     NSString *pType = dic[@"pType"]; //属性类型
@@ -158,49 +159,27 @@ static NSString *dbPath = @"";
     //实例化一个model
     id model = [[modelClass alloc] init];
     
-    
-    unsigned int count = 0;
-    //获取属性列表
-    Ivar *members = class_copyIvarList(modelClass, &count);
-    
-    //遍历属性列表
-    for (int i = 0 ; i < count; i++) {
-        Ivar var = members[i];
-        //获取变量名称
-        const char *memberName = ivar_getName(var);
-        NSString *ocName = [[[NSString alloc] initWithCString:memberName encoding:NSUTF8StringEncoding] substringFromIndex:1];
-        //获取变量类型
-        const char *memberType = ivar_getTypeEncoding(var);
-        
-        Ivar ivar = class_getInstanceVariable(modelClass, memberName);
-        
-        NSString *typeStr = [NSString stringWithCString:memberType encoding:NSUTF8StringEncoding];
-        
-        //判断类型
-        if ([typeStr isEqualToString:@"@\"NSString\""]) {
-            object_setIvar(model, ivar, [result stringForColumn:ocName]);
-        }else {
-            NSNumber *value = [NSNumber numberWithInteger:[result intForColumn:ocName]];
-            object_setIvar(model, ivar, value);
-        }
-    }
-    
-    /*
-     NSArray *pArray = [self getPropertyNameArrayWith:model];
+     NSArray *pArray = [self getPropertyNameArrayWith:modelClass];
      
      for (NSInteger index = 0; index < pArray.count; index++ ) {
-     //获取set方法
-     SEL setSel = [self creatSetterWithPropertyName:pArray[index]];
-     
-     if ([model respondsToSelector:setSel]) {
-     NSString *value = [result stringForColumn:pArray[index]];
-     value = [value stringByReplacingCharactersInRange:NSMakeRange(0, 1) withString:[[value substringToIndex:1] uppercaseString]];
-     [model performSelectorOnMainThread:setSel withObject:value waitUntilDone:[NSThread isMainThread]];
-     
+         NSMutableDictionary *dic = pArray[index];
+         //获取set方法
+         SEL setSel = [self creatSetterWithPropertyName:dic[@"pName"]];
+         
+         if ([model respondsToSelector:setSel]) {
+             if ([dic[@"pType"] isEqualToString:@"TEXT"]) {
+                 NSString *value = [result stringForColumn:dic[@"pName"]];
+                 value = [value stringByReplacingCharactersInRange:NSMakeRange(0, 1) withString:[[value substringToIndex:1] uppercaseString]];
+                 [model performSelectorOnMainThread:setSel withObject:value waitUntilDone:[NSThread isMainThread]];
+             } else {
+                 int value = [result intForColumn:dic[@"pName"]];
+//                 ((void (*)(id, SEL, int))(void *) objc_msgSend)((id)model, setSel, intValue);
+                 
+                 [model performSelectorOnMainThread:setSel withObject:@(value) waitUntilDone:[NSThread isMainThread]];
+             }
+         }
      }
-     
-     }
-     */
+    
     
     
     return model;
@@ -234,6 +213,7 @@ static NSString *dbPath = @"";
 }
 // 获取属性的set 方法
 - (SEL)creatSetterWithPropertyName:(NSString *)propertyName {
+    propertyName = propertyName.capitalizedString;
     NSString *selName = [NSString stringWithFormat:@"set%@:",propertyName];
     return NSSelectorFromString(selName);
 }
@@ -392,8 +372,14 @@ static NSString *dbPath = @"";
     }];
 }
 
-// 查表
-- (NSArray <NSObject *> *)SearchTable:(id)modelClass withOptions:(NSString *)options callBack:(FMResultsCallBack)callBack {
+/**
+ 查询数据库表
+ 
+ @param modelClass  数据模型Class
+ @param options     查询条件
+ @param callBack    查询结果回调
+ */
+- (void)SearchTable:(id)modelClass withOptions:(NSString *)options callBack:(FMResultsCallBack)callBack {
     NSMutableArray *targetArray = [NSMutableArray array];
     
     //获取表名
@@ -430,7 +416,6 @@ static NSString *dbPath = @"";
         }
     }];
     
-    return [targetArray copy];
 }
 
 // 改表
@@ -439,6 +424,28 @@ static NSString *dbPath = @"";
 }
 
 
+/**
+ 删除数据库表
+ 
+ @param modelClass  数据模型Class __ 如没有设置DataSource，则取Class名为表名试着删除
+ @param callBack    删除结果
+ */
+- (void)deletedTableWithTableName:(id)modelClass callBack:(CallBack)callBack {
+    //获取表名
+    NSString *tableName = [self getTableNameWithModelClass:modelClass];
+    
+    NSString *optionStr = [NSString stringWithFormat:@"DROP TABLE IF EXISTS %@;",tableName];
+    
+    FMDatabaseQueue *db_Queue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
+    [db_Queue inTransaction:^(FMDatabase *db, BOOL *rollback) {
+        if ([db open]) { //防止该表没有被创建or没有被打开
+            BOOL success = [db executeUpdate:optionStr];
+            if (callBack) {
+                callBack(success);
+            }
+        }
+    }];
+}
 
 
 #pragma mark - lazyLoad

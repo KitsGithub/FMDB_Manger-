@@ -12,13 +12,11 @@
 
 @property (nonatomic, copy) NSString *name;
 
-@property (nonatomic, assign) NSNumber *age;
+@property (nonatomic, weak) NSNumber *age;
 
 @property (nonatomic, copy) NSString *sex;
 
-
-
-@property (nonatomic, assign) NSNumber *school;
+@property (nonatomic, weak) NSNumber *school;
 
 
 

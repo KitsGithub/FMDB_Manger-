@@ -62,6 +62,12 @@
     [button5 addTarget:self action:@selector(searchData) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:button5];
     
+    
+    UIButton *button6 = [[UIButton alloc] initWithFrame:CGRectMake(20, 300, 100, 30)];
+    button6.backgroundColor = [UIColor grayColor];
+    [button6 setTitle:@"删除数据库表" forState:UIControlStateNormal];
+    [button6 addTarget:self action:@selector(deletedTable) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:button6];
 }
 
 #pragma mark - UIAction
@@ -76,6 +82,15 @@
 
 - (void)closeDB {
     [[FMDB_Manager shareManager] closeAllSquilteTable];
+}
+
+//删除数据库表
+- (void)deletedTable {
+    [[FMDB_Manager shareManager] deletedTableWithTableName:[DBModel class] callBack:^(BOOL success) {
+        if (success) {
+            NSLog(@"删除成功");
+        }
+    }];
 }
 
 //插入数据

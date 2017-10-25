@@ -54,7 +54,10 @@ NSString *const KXPropertyTypeId = @"@";
     } else if (ocType.length > 3 && [ocType hasPrefix:@"@\""]) {
         
         NSString *type = [ocType substringWithRange:NSMakeRange(2, ocType.length - 3)];
-        return @"TEXT";
+        if ([type isEqualToString:@"NSString"]) {
+            return @"TEXT";
+        } else if ([type isEqualToString:@"NSNumber"])
+        return @"INTEGER";
         
     }
     
