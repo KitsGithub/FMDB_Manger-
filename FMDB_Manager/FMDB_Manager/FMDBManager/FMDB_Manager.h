@@ -121,6 +121,6 @@ typedef void(^FMResultsCallBack)(NSArray <NSObject *> *array);
  @param modelClass      数据模型Class __ 如没有设置DataSource，则取Class名为表名试着删除
  @param callBack        删除结果
  */
-- (void)deletedTableWithTableName:(id)modelClass callBack:(CallBack)callBack;;
+- (void)deletedTableWithTableName:(id)modelClass callBack:(CallBack)callBack;
 
 @end

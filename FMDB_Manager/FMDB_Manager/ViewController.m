@@ -86,9 +86,6 @@
     }];
 }
 
-- (void)closeDB {
-    [[FMDB_Manager shareManager] closeAllSquilteTable];
-}
 
 //删除数据库表
 - (void)deletedTable {
@@ -117,8 +114,6 @@
     [[FMDB_Manager shareManager] DeletedDataFromTable:[DBModel class] withOptions:@"age >= 50" callBack:^(BOOL success) {
         if (success) {
             NSLog(@"删除成功");
-        } else {
-            NSLog(@"删除失败");
         }
     }];
 }
