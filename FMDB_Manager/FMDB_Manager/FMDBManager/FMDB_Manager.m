@@ -12,7 +12,6 @@
 #import <Foundation/NSEnumerator.h>
 #import <Foundation/NSRange.h>
 #import <Foundation/NSObjCRuntime.h>
-#import <Messages/Messages.h>
 
 #import "ManagerConst.h"
 
@@ -169,7 +168,6 @@ static NSString *dbPath = @"";
          if ([model respondsToSelector:setSel]) {
              if ([dic[@"pType"] isEqualToString:@"TEXT"]) {
                  NSString *value = [result stringForColumn:dic[@"pName"]];
-                 value = [value stringByReplacingCharactersInRange:NSMakeRange(0, 1) withString:[[value substringToIndex:1] uppercaseString]];
                  [model performSelectorOnMainThread:setSel withObject:value waitUntilDone:[NSThread isMainThread]];
              } else {
                  int value = [result intForColumn:dic[@"pName"]];
@@ -213,7 +211,21 @@ static NSString *dbPath = @"";
 }
 // 获取属性的set 方法
 - (SEL)creatSetterWithPropertyName:(NSString *)propertyName {
-    propertyName = propertyName.capitalizedString;
+    
+    //判断首字母是否为小写字母，是则换成大写
+    for (NSUInteger index = 0; index < propertyName.length; ) {
+        if ([propertyName characterAtIndex:index] >= 'a' && [propertyName characterAtIndex:index] <= 'z') {
+            
+            int asciiCode = [propertyName characterAtIndex:0];
+            asciiCode -= 32;
+            
+            propertyName = [propertyName stringByReplacingCharactersInRange:NSMakeRange(index, 1) withString:[NSString stringWithFormat:@"%c", asciiCode]];
+            break;
+        } else {
+            break;
+        }
+    }
+    
     NSString *selName = [NSString stringWithFormat:@"set%@:",propertyName];
     return NSSelectorFromString(selName);
 }

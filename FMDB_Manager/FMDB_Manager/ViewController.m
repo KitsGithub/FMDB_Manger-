@@ -99,7 +99,7 @@
 //插入数据
 - (void)creatDataToDB {
     for (DBModel *model in self.dataArray) {
-        [[FMDB_Manager shareManager] InsertDataInTable:[DBModel class] withValuesArray:@[model.name,model.age,model.sex,model.school] callBack:^(BOOL success) {
+        [[FMDB_Manager shareManager] InsertDataInTable:[DBModel class] withValuesArray:@[model.name,model.age,model.sex,model.school,model._testProperty1,model.TestProperty2,model._01TestProperty3,model.test01Property4] callBack:^(BOOL success) {
             if (success) {
                 NSLog(@"插入成功");
             } else {
@@ -177,6 +177,20 @@
                 model.sex = @"女";
             }
             model.school = @(index % 2);
+            /*
+             
+             @property (nonatomic, copy) NSString *_testProperty1;
+             
+             @property (nonatomic, copy) NSString *TestProperty2;
+             
+             @property (nonatomic, copy) NSString *_01TestProperty3;
+             
+             @property (nonatomic, copy) NSString *test01Property4;
+             */
+            model._testProperty1 = @"测试属性1";
+            model.TestProperty2 = @"测试属性2";
+            model._01TestProperty3 = @"测试属性3";
+            model.test01Property4 = @"测试属性4";
             
             [_dataArray addObject:model];
         }
