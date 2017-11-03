@@ -79,7 +79,7 @@ typedef void(^FMResultsCallBack)(NSArray <NSObject *> *array);
  插入数据到 表
 
  @param modelClass      数据模型Class
- @param valuesArray     模型对应的值数组
+ @param modelArray      模型数组
  @param callBack        结果回调
  */
 - (void)InsertDataInTable:(id)modelClass withModelsArray:(NSArray <NSObject *> *)modelArray callBack:(CallBack)callBack;

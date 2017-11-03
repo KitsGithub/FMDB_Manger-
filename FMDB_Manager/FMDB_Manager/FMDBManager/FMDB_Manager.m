@@ -364,7 +364,7 @@ static NSString *dbPath = @"";
  插入数据到数据库
  
  @param modelClass 数据模型Class
- @param modelArray 模型对应的值数组
+ @param modelArray 模型数组
  */
 - (void)InsertDataInTable:(id)modelClass withModelsArray:(NSArray <NSObject *> *)modelArray callBack:(CallBack)callBack {
     

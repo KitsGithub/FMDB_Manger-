@@ -11,6 +11,7 @@ tips:由于技术原因，因此模型里面的类型需要是Object，暂不支
 
 
 ### 更新日志
+>17.11.3 修改了插入数据的API以及实现
 > 17.10.25 基本完成FMDB_Manager的方法编写
 
 
@@ -77,23 +78,21 @@ FMDB_Manager *manager = [FMDB_Manager shareManager];
 插入数据到 表
 
 @param modelClass      数据模型Class
-@param valuesArray     模型对应的值数组
+@param modelArray      模型数组
 @param callBack        结果回调
 */
-- (void)InsertDataInTable:(id)modelClass withValuesArray:(NSArray <NSObject *> *)valuesArray callBack:(CallBack)callBack;
+- (void)InsertDataInTable:(id)modelClass withModelsArray:(NSArray <NSObject *> *)modelArray callBack:(CallBack)callBack;
 ```
 增加的数据的用法
 ```objc
 - (void)creatDataToDB {
-    for (DBModel *model in self.dataArray) {
-        [[FMDB_Manager shareManager] InsertDataInTable:[DBModel class] withValuesArray:@[model.name,model.age,model.sex,model.school] callBack:^(BOOL success) {
-            if (success) {
-                NSLog(@"插入成功");
-            } else {
-                NSLog(@"插入失败");
-            }
-        }];
-    }
+    [[FMDB_Manager shareManager] InsertDataInTable:[DBModel class] withModelsArray:[self.dataArray copy] callBack:^(BOOL success) {
+        if (success) {
+            NSLog(@"插入成功");
+        } else {
+            NSLog(@"插入失败");
+        }
+    }];
 }
 ```
 
