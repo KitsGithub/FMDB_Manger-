@@ -118,11 +118,15 @@ static NSString *dbPath = @"";
 }
 
 // 获取模型属性的值
-- (NSArray *)getProperyWith:(id)model andArray:(NSMutableArray *)pArray {
+- (NSArray *)getProperyWith:(id)model andArray:(NSArray <NSMutableDictionary *>*)pArray {
+    
+    NSMutableArray *valueArray = [NSMutableArray array];
+    
     for (NSInteger index = 0; index < pArray.count; index++) {
-        NSMutableString *resultString = [[NSMutableString alloc] init];
+        
+        NSDictionary *dic = pArray[index];
         //获取get方法
-        SEL getSel = [self creatGetterWithPropertyName:pArray[index]];
+        SEL getSel = [self creatGetterWithPropertyName:dic[@"pName"]];
         //获得类和方法的签名
         NSMethodSignature *signature = [model methodSignatureForSelector:getSel];
         
@@ -144,11 +148,9 @@ static NSString *dbPath = @"";
         //接收返回值
         [invocation getReturnValue:&returnValue];
         
-        [resultString appendFormat:@"%@", returnValue];
-        [pArray replaceObjectAtIndex:index withObject:resultString];
-        
+        [valueArray addObject:returnValue];
     }
-    return pArray;
+    return valueArray;
     
 }
 
@@ -200,6 +202,10 @@ static NSString *dbPath = @"";
         tableName = NSStringFromClass(modelClass);
     }
     return tableName;
+}
+
+- (void)getValeArray:(NSObject *)model {
+    NSArray *valueArray = [NSArray array];
 }
 
 
@@ -358,11 +364,11 @@ static NSString *dbPath = @"";
  插入数据到数据库
  
  @param modelClass 数据模型Class
- @param valuesArray 模型对应的值数组
+ @param modelArray 模型对应的值数组
  */
-- (void)InsertDataInTable:(id)modelClass withValuesArray:(NSArray <NSObject *> *)valuesArray callBack:(CallBack)callBack {
+- (void)InsertDataInTable:(id)modelClass withModelsArray:(NSArray <NSObject *> *)modelArray callBack:(CallBack)callBack {
     
-    if (!valuesArray.count) {
+    if (!modelArray.count) {
         NSAssert(false, @"传入的数组为空");
     }
     
@@ -371,15 +377,23 @@ static NSString *dbPath = @"";
     
     //插入操作字符串
     NSString *operationString = [[@"INSERT INTO " stringByAppendingString:tableName] stringByAppendingString:[NSString stringWithFormat:@" %@",[self getCreatTableOperationStrWithPropertyArray:[self getPropertyNameArrayWith:modelClass] type:Inser_DBOperationType]]];
-    NSLog(@"插入操作符 %@",operationString);
     
     FMDatabaseQueue *db_Queue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
     [db_Queue inTransaction:^(FMDatabase *db, BOOL *rollback) {
         if ([db open]) { //防止该表没有被创建or没有被打开
-            BOOL success = [db executeUpdate:operationString withArgumentsInArray:valuesArray];
-            if (callBack) {
-                callBack(success);
+            
+            for (NSObject *model in modelArray) {
+                //获取对应属性的值
+                NSArray *valueArray = [self getProperyWith:model andArray:[self getPropertyNameArrayWith:[model class]]];
+                
+                BOOL success = [db executeUpdate:operationString withArgumentsInArray:valueArray];
+                if (callBack) {
+                    callBack(success);
+                }
             }
+            
+            
+            
         }
     }];
 }
@@ -509,6 +523,37 @@ static NSString *dbPath = @"";
         }
     }];
 }
+
+
+- (void)inserDataIfNoExit:(NSArray <NSObject *>*)dataArray {
+    
+}
+
+- (void)inserDataInTable:(id)model data:(NSObject *)fistObj,... {
+    
+    if (![model isKindOfClass:[NSObject class]]) {
+        NSAssert(false, @"请传入模型");
+    }
+    
+    va_list args;
+    va_start(args, fistObj);
+    
+    if(fistObj){
+        
+        NSString *otherString;
+        
+        while((otherString = va_arg(args, NSString *))){
+            //依次取得所有参数
+            NSLog(@"%@",otherString);
+        }
+    }
+    va_end(args);
+    
+    
+    
+    NSLog(@"取值完成");
+}
+
 
 
 #pragma mark - lazyLoad

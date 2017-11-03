@@ -12,13 +12,17 @@
 #import "DBModel.h"
 
 
-@interface ViewController () <FMDB_Manager_Delegate,FMDB_Manager_DataSource>
+@interface ViewController () <FMDB_Manager_Delegate,FMDB_Manager_DataSource,UITableViewDelegate,UITableViewDataSource>
+
+@property (nonatomic, strong) NSMutableArray<NSString *>*titleArray;
 
 @property (nonatomic, strong) NSMutableArray<DBModel *> *dataArray;
 
 @end
 
-@implementation ViewController
+@implementation ViewController {
+    UITableView *_tableView;
+}
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -30,50 +34,62 @@
     [manager openAllSqliteTable];
     
     
-    UIButton *button = [[UIButton alloc] initWithFrame:CGRectMake(20, 100, 100, 30)];
-    button.backgroundColor = [UIColor grayColor];
-    [button setTitle:@"创建数据库" forState:UIControlStateNormal];
-    [button addTarget:self action:@selector(creatDB) forControlEvents:UIControlEventTouchUpInside];
-    [self.view addSubview:button];
+    _tableView = [[UITableView alloc] initWithFrame:self.view.frame style:(UITableViewStylePlain)];
+    _tableView.delegate = self;
+    _tableView.dataSource = self;
+    [_tableView registerClass:[UITableViewCell class] forCellReuseIdentifier:@"id"];
+    [self.view addSubview:_tableView];
     
-    UIButton *button1 = [[UIButton alloc] initWithFrame:CGRectMake(140, 100, 100, 30)];
-    button1.backgroundColor = [UIColor grayColor];
-    [button1 setTitle:@"关闭数据库" forState:UIControlStateNormal];
-    [button1 addTarget:self action:@selector(closeDB) forControlEvents:UIControlEventTouchUpInside];
-    [self.view addSubview:button1];
-    
-    
-    UIButton *button3 = [[UIButton alloc] initWithFrame:CGRectMake(20, 150, 100, 30)];
-    button3.backgroundColor = [UIColor grayColor];
-    [button3 setTitle:@"新增数据" forState:UIControlStateNormal];
-    [button3 addTarget:self action:@selector(creatDataToDB) forControlEvents:UIControlEventTouchUpInside];
-    [self.view addSubview:button3];
-    
-    
-    UIButton *button4 = [[UIButton alloc] initWithFrame:CGRectMake(20, 200, 100, 30)];
-    button4.backgroundColor = [UIColor grayColor];
-    [button4 setTitle:@"删除数据" forState:UIControlStateNormal];
-    [button4 addTarget:self action:@selector(deletedData) forControlEvents:UIControlEventTouchUpInside];
-    [self.view addSubview:button4];
-    
-    UIButton *button5 = [[UIButton alloc] initWithFrame:CGRectMake(20, 250, 100, 30)];
-    button5.backgroundColor = [UIColor grayColor];
-    [button5 setTitle:@"查数据" forState:UIControlStateNormal];
-    [button5 addTarget:self action:@selector(searchData) forControlEvents:UIControlEventTouchUpInside];
-    [self.view addSubview:button5];
-    
-    
-    UIButton *button6 = [[UIButton alloc] initWithFrame:CGRectMake(20, 300, 150, 30)];
-    button6.backgroundColor = [UIColor grayColor];
-    [button6 setTitle:@"删除数据库表" forState:UIControlStateNormal];
-    [button6 addTarget:self action:@selector(deletedTable) forControlEvents:UIControlEventTouchUpInside];
-    [self.view addSubview:button6];
-    
-    UIButton *button7 = [[UIButton alloc] initWithFrame:CGRectMake(20, 350, 100, 30)];
-    button7.backgroundColor = [UIColor grayColor];
-    [button7 setTitle:@"更新数据" forState:UIControlStateNormal];
-    [button7 addTarget:self action:@selector(updataData) forControlEvents:UIControlEventTouchUpInside];
-    [self.view addSubview:button7];
+ 
+}
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+    return 1;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return self.titleArray.count;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"id" forIndexPath:indexPath];
+    cell.textLabel.text = self.titleArray[indexPath.row];
+    return cell;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    return 50;
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    switch (indexPath.row) {
+        case 0:     //创建数据库
+            [self creatDB];
+            break;
+        case 1:     //新增索引
+            [self creatIndex];
+            break;
+        case 2:     //插入新数据
+            [self creatDataToDB];
+            break;
+        case 3:     //删除数据
+            [self deletedData];
+            break;
+        case 4:     //搜索数据
+            [self searchData];
+            break;
+        case 5:     //删除数据库表
+            [self deletedTable];
+            break;
+        case 6:     //更新数据库字段
+            [self updataData];
+            break;
+        case 7:     //插入数据 - 如果不存在
+            [self inserDataIfNotExit];
+            break;
+        default:
+            break;
+    }
 }
 
 #pragma mark - UIAction
@@ -82,6 +98,18 @@
     [[FMDB_Manager shareManager] creatTableIfNotExistWithModelClass:[DBModel class] callBack:^(BOOL success) {
         if (success) {
             NSLog(@"数据库创建成功");
+        }
+    }];
+    
+    
+}
+
+
+//新增索引
+- (void)creatIndex {
+    [[FMDB_Manager shareManager] creatIndexInTable:[DBModel class] withString:@"userId" andIndexName:@"MyIndex" callBack:^(BOOL success) {
+        if (success) {
+            NSLog(@"新增索引成功");
         }
     }];
 }
@@ -98,15 +126,15 @@
 
 //插入数据
 - (void)creatDataToDB {
-    for (DBModel *model in self.dataArray) {
-        [[FMDB_Manager shareManager] InsertDataInTable:[DBModel class] withValuesArray:@[model.name,model.age,model.sex,model.school,model._testProperty1,model.TestProperty2,model._01TestProperty3,model.test01Property4] callBack:^(BOOL success) {
-            if (success) {
-                NSLog(@"插入成功");
-            } else {
-                NSLog(@"插入失败");
-            }
-        }];
-    }
+    
+    [[FMDB_Manager shareManager] InsertDataInTable:[DBModel class] withModelsArray:[self.dataArray copy] callBack:^(BOOL success) {
+        if (success) {
+            NSLog(@"插入成功");
+        } else {
+            NSLog(@"插入失败");
+        }
+    }];
+    
 }
 
 //删除数据
@@ -140,6 +168,13 @@
     }];
 }
 
+- (void)inserDataIfNotExit {
+    
+    
+    
+    [[FMDB_Manager shareManager] inserDataInTable:self.dataArray[0] data:@"123",@"321",@"我",@"是",@"可",@"变",@"参数", nil];
+}
+
 #pragma mark - FMDB_ManagerDelegate
 //指定表路径
 - (NSString *)dbPath {
@@ -163,7 +198,7 @@
         for (NSInteger index = 0; index < 10; index++) {
             DBModel *model = [DBModel new];
             
-            
+            model.userId = [NSString stringWithFormat:@"%zd",index];
             model.age = @(index * 10);
             if ([model.age isEqualToNumber:[NSNumber numberWithInteger:10]]) {
                 model.name = @"特殊的名字";
@@ -177,16 +212,6 @@
                 model.sex = @"女";
             }
             model.school = @(index % 2);
-            /*
-             
-             @property (nonatomic, copy) NSString *_testProperty1;
-             
-             @property (nonatomic, copy) NSString *TestProperty2;
-             
-             @property (nonatomic, copy) NSString *_01TestProperty3;
-             
-             @property (nonatomic, copy) NSString *test01Property4;
-             */
             model._testProperty1 = @"测试属性1";
             model.TestProperty2 = @"测试属性2";
             model._01TestProperty3 = @"测试属性3";
@@ -198,5 +223,11 @@
     return _dataArray;
 }
 
+- (NSMutableArray<NSString *> *)titleArray {
+    if (!_titleArray) {
+        _titleArray = [NSMutableArray arrayWithObjects:@"创建数据库",@"新增索引",@"新增数据",@"删除数据",@"查数据",@"删除数据库表",@"更新数据",@"插入数据，有则更新，没有则插入新的", nil];
+    }
+    return _titleArray;
+}
 
 @end

@@ -52,7 +52,7 @@ typedef void(^FMResultsCallBack)(NSArray <NSObject *> *array);
  */
 - (void)openAllSqliteTable;
 
-
+#warning toDo 给一堆数据，有就更新，没有就插入
 
 /* 数据库 - 基本操作 */
 /**
@@ -82,8 +82,12 @@ typedef void(^FMResultsCallBack)(NSArray <NSObject *> *array);
  @param valuesArray     模型对应的值数组
  @param callBack        结果回调
  */
-- (void)InsertDataInTable:(id)modelClass withValuesArray:(NSArray <NSObject *> *)valuesArray callBack:(CallBack)callBack;
+- (void)InsertDataInTable:(id)modelClass withModelsArray:(NSArray <NSObject *> *)modelArray callBack:(CallBack)callBack;
 
+
+- (void)inserDataIfNoExit:(NSArray <NSObject *>*)dataArray;
+
+- (void)inserDataInTable:(id)modelClass data:(NSObject *)firstObj,... NS_REQUIRES_NIL_TERMINATION;
 
 /**
  删除表数据
@@ -122,5 +126,7 @@ typedef void(^FMResultsCallBack)(NSArray <NSObject *> *array);
  @param callBack        删除结果
  */
 - (void)deletedTableWithTableName:(id)modelClass callBack:(CallBack)callBack;
+
+
 
 @end

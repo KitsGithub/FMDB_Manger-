@@ -10,6 +10,8 @@
 
 @interface DBModel : NSObject
 
+@property (nonatomic, copy) NSString *userId;
+
 @property (nonatomic, copy) NSString *name;
 
 @property (nonatomic, assign) NSNumber *age;
