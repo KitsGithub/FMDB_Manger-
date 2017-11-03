@@ -127,7 +127,10 @@
 //插入数据
 - (void)creatDataToDB {
     
-    [[FMDB_Manager shareManager] InsertDataInTable:[DBModel class] withModelsArray:[self.dataArray copy] callBack:^(BOOL success) {
+    [[FMDB_Manager shareManager] InsertDataInTable:[DBModel class]
+                                   withModelsArray:[self.dataArray copy]
+                                          callBack:^(BOOL success)
+    {
         if (success) {
             NSLog(@"插入成功");
         } else {
