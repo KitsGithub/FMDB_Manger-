@@ -50,8 +50,7 @@ FMDB_Manager *manager = [FMDB_Manager shareManager];
 @end
 ```
 
-## 数据库的增删改查方法
-### 增
+## 数据库的增
 ```objc
 /**
 创建数据库
@@ -100,7 +99,7 @@ FMDB_Manager *manager = [FMDB_Manager shareManager];
 
 
 
-### 删
+## 数据库的删
 从表中删除数据
 ```objc
 /**
@@ -123,7 +122,7 @@ FMDB_Manager *manager = [FMDB_Manager shareManager];
 }
 ```
 
-### 改
+## 数据库的改
 ```objc
 /**
 修改表的数据
@@ -146,7 +145,7 @@ FMDB_Manager *manager = [FMDB_Manager shareManager];
 }
 ```
 
-### 查
+## 数据库的查
 ```objc
 /**
 查询表数据
@@ -171,7 +170,7 @@ FMDB_Manager *manager = [FMDB_Manager shareManager];
 }
 ```
 
-
+## 新增数据库索引
 同时，由于使用场景的不同，提供了一个为表添加索引的API 和删除数据库表的方法
 ```objc
 /**
@@ -185,7 +184,7 @@ FMDB_Manager *manager = [FMDB_Manager shareManager];
 - (void)creatIndexInTable:(id)modelClass withString:(NSString *)indexes andIndexName:(NSString *)IndexesName callBack:(CallBack)callBack;
 ```
 
-删除数据库表的方法
+## 删除数据库表
 ```objc
 /**
 删除数据库表

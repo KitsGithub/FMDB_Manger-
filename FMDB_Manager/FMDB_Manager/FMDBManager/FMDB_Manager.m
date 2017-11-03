@@ -525,11 +525,8 @@ static NSString *dbPath = @"";
 }
 
 
-- (void)inserDataIfNoExit:(NSArray <NSObject *>*)dataArray {
+- (void)inserDataInTable:(id)model options:(NSString *)options data:(NSObject *)fistObj,... NS_REQUIRES_NIL_TERMINATION {
     
-}
-
-- (void)inserDataInTable:(id)model data:(NSObject *)fistObj,... {
     
     if (![model isKindOfClass:[NSObject class]]) {
         NSAssert(false, @"请传入模型");
@@ -549,7 +546,9 @@ static NSString *dbPath = @"";
     }
     va_end(args);
     
-    
+    [self SearchTable:[model class] withOptions:options callBack:^(NSArray<NSObject *> *array) {
+        
+    }];
     
     NSLog(@"取值完成");
 }

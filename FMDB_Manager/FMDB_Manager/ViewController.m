@@ -126,7 +126,6 @@
 
 //插入数据
 - (void)creatDataToDB {
-    
     [[FMDB_Manager shareManager] InsertDataInTable:[DBModel class]
                                    withModelsArray:[self.dataArray copy]
                                           callBack:^(BOOL success)
@@ -172,10 +171,7 @@
 }
 
 - (void)inserDataIfNotExit {
-    
-    
-    
-    [[FMDB_Manager shareManager] inserDataInTable:self.dataArray[0] data:@"123",@"321",@"我",@"是",@"可",@"变",@"参数", nil];
+//    [[FMDB_Manager shareManager] inserDataInTable:self.dataArray[0] data:@"123",@"321",@"我",@"是",@"可",@"变",@"参数", nil];
 }
 
 #pragma mark - FMDB_ManagerDelegate
