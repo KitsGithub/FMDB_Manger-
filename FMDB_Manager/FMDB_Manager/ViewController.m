@@ -16,6 +16,7 @@
 
 @property (nonatomic, strong) NSMutableArray<NSString *>*titleArray;
 
+@property (nonatomic, strong) NSMutableArray <DBModel *> *inserArray;
 @property (nonatomic, strong) NSMutableArray<DBModel *> *dataArray;
 
 @end
@@ -171,7 +172,13 @@
 }
 
 - (void)inserDataIfNotExit {
-//    [[FMDB_Manager shareManager] inserDataInTable:self.dataArray[0] data:@"123",@"321",@"我",@"是",@"可",@"变",@"参数", nil];
+    
+    NSMutableArray *newData = [NSMutableArray arrayWithArray:self.inserArray];
+    [newData addObjectsFromArray:self.dataArray];
+    
+    [[FMDB_Manager shareManager] InsertDataToTable:[DBModel class] ifDataNotExite:newData withOperation:@"userId" callBack:^(BOOL success) {
+        
+    }];
 }
 
 #pragma mark - FMDB_ManagerDelegate
@@ -185,7 +192,6 @@
 #pragma mark - FMDB_ManagerDataSource
 //指定操作表名
 - (NSString *)tableNameWithModelClass:(id)Class {
-    NSLog(@"%@",NSStringFromClass(Class));
     return @"FistTable";
 }
 
@@ -220,6 +226,43 @@
         }
     }
     return _dataArray;
+}
+
+- (NSMutableArray<DBModel *> *)inserArray {
+    if (!_inserArray) {
+        
+        _inserArray = [NSMutableArray array];
+        
+        for (NSInteger index = 20; index < 30; index++) {
+            DBModel *model = [DBModel new];
+            
+            model.userId = [NSString stringWithFormat:@"%zd",index];
+            model.age = @(index * 10);
+            if ([model.age isEqualToNumber:[NSNumber numberWithInteger:10]]) {
+                model.name = @"特殊的名字";
+            } else {
+                model.name = @"哈哈";
+            }
+            
+            if (index % 2) {
+                model.sex = @"男";
+            } else {
+                model.sex = @"女";
+            }
+            model.school = @(index % 2);
+            model._testProperty1 = @"测试属性1";
+            model.TestProperty2 = @"测试属性2";
+            model._01TestProperty3 = @"测试属性3";
+            model.test01Property4 = @"测试属性4";
+            
+            [_inserArray addObject:model];
+        }
+        
+        
+        
+        
+    }
+    return _inserArray;
 }
 
 - (NSMutableArray<NSString *> *)titleArray {
