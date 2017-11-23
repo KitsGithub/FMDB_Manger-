@@ -233,7 +233,7 @@
         
         _inserArray = [NSMutableArray array];
         
-        for (NSInteger index = 20; index < 30; index++) {
+        for (NSInteger index = 5; index < 15; index++) {
             DBModel *model = [DBModel new];
             
             model.userId = [NSString stringWithFormat:@"%zd",index];
