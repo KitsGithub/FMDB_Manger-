@@ -5,7 +5,7 @@
 tips:由于技术原因，因此模型里面的类型需要是Object，暂不支持int、Float、doublt 这种基本数据类型，以后会持续更新和优化。请谅解
 
 
-## 目录结构FMDB_Manger
+## 目录
 - 更新日志
 - API介绍
 
